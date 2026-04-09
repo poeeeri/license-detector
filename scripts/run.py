@@ -26,7 +26,7 @@ def annotate_frame(model: My_LicensePlate_Model, frame):
     for plate in model.detect_plates(frame):
         x1, y1, x2, y2 = plate["bbox"]
         cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        cv2.putText(frame, f"{p['confidence']:.2f}", (x1, y1-5),
+        cv2.putText(annotated, f"{plate['confidence']:.2f}", (x1, y1-5),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 1)
     return annotated
 
