@@ -1,0 +1,14 @@
+__pycache__/
+
+data/
+*.log
+
+weights/
+*.pt
+
+result.mp4
+
+prepare_dataset.py
+videos/
+clearml.conf
+runs/

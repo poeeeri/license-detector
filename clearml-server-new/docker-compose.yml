@@ -1,0 +1,150 @@
+services:
+  apiserver:
+    image: clearml/server:latest
+    command: ["apiserver"]
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - mongo
+      - elasticsearch
+      - fileserver
+    environment:
+      CLEARML_ELASTIC_SERVICE_HOST: elasticsearch
+      CLEARML_ELASTIC_SERVICE_PORT: 9200
+      CLEARML_MONGODB_SERVICE_HOST: mongo
+      CLEARML_MONGODB_SERVICE_PORT: 27017
+      CLEARML_REDIS_SERVICE_HOST: redis
+      CLEARML_REDIS_SERVICE_PORT: 6379
+      CLEARML_SERVER_DEPLOYMENT_TYPE: linux
+      CLEARML__apiserver__pre_populate__enabled: "true"
+      CLEARML__apiserver__pre_populate__zip_files: "/opt/clearml/db-pre-populate"
+      CLEARML__apiserver__pre_populate__artifacts_path: "/mnt/fileserver"
+      CLEARML__services__async_urls_delete__enabled: "true"
+      CLEARML__services__async_urls_delete__fileserver__url_prefixes: "[http://fileserver:8081]"
+    ports:
+      - "18008:8008"
+    volumes:
+      - clearml_logs:/var/log/clearml
+      - clearml_config:/opt/clearml/config
+      - clearml_files:/mnt/fileserver
+    networks:
+      - backend
+      - frontend
+
+  webserver:
+    image: clearml/server:latest
+    command: ["webserver"]
+    restart: unless-stopped
+    depends_on:
+      - apiserver
+    ports:
+      - "18080:80"
+    networks:
+      - backend
+      - frontend
+
+  fileserver:
+    image: clearml/server:latest
+    command: ["fileserver"]
+    restart: unless-stopped
+    environment:
+      CLEARML__fileserver__delete__allow_batch: "true"
+    ports:
+      - "18081:8081"
+    volumes:
+      - clearml_logs:/var/log/clearml
+      - clearml_files:/mnt/fileserver
+      - clearml_config:/opt/clearml/config
+    networks:
+      - backend
+      - frontend
+
+  mongo:
+    image: mongo:8.0.15
+    restart: unless-stopped
+    command: ["--setParameter", "internalQueryMaxBlockingSortMemoryUsageBytes=196100200"]
+    volumes:
+      - clearml_mongo_db:/data/db
+      - clearml_mongo_config:/data/configdb
+    networks:
+      - backend
+
+  redis:
+    image: redis:8.2.3
+    restart: unless-stopped
+    volumes:
+      - clearml_redis:/data
+    networks:
+      - backend
+
+  elasticsearch:
+    image: elasticsearch:8.19.9
+    restart: unless-stopped
+    environment:
+      bootstrap.memory_lock: "true"
+      cluster.name: clearml
+      cluster.routing.allocation.node_initial_primaries_recoveries: "500"
+      cluster.routing.allocation.disk.watermark.low: 500mb
+      cluster.routing.allocation.disk.watermark.high: 500mb
+      cluster.routing.allocation.disk.watermark.flood_stage: 500mb
+      discovery.type: "single-node"
+      http.compression_level: "7"
+      node.name: clearml
+      reindex.remote.whitelist: "'*.*'"
+      xpack.security.enabled: "false"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - clearml_elastic:/usr/share/elasticsearch/data
+    networks:
+      - backend
+
+  async_delete:
+    image: clearml/server:latest
+    restart: unless-stopped
+    depends_on:
+      - apiserver
+      - redis
+      - mongo
+      - elasticsearch
+      - fileserver
+    environment:
+      CLEARML_ELASTIC_SERVICE_HOST: elasticsearch
+      CLEARML_ELASTIC_SERVICE_PORT: 9200
+      CLEARML_MONGODB_SERVICE_HOST: mongo
+      CLEARML_MONGODB_SERVICE_PORT: 27017
+      CLEARML_REDIS_SERVICE_HOST: redis
+      CLEARML_REDIS_SERVICE_PORT: 6379
+      PYTHONPATH: /opt/clearml/apiserver
+      CLEARML__services__async_urls_delete__fileserver__url_prefixes: "[http://fileserver:8081]"
+    entrypoint:
+      - python3
+      - -m
+      - jobs.async_urls_delete
+      - --fileserver-host
+      - http://fileserver:8081
+    volumes:
+      - clearml_logs:/var/log/clearml
+      - clearml_config:/opt/clearml/config
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
+
+volumes:
+  clearml_logs:
+  clearml_config:
+  clearml_files:
+  clearml_mongo_db:
+  clearml_mongo_config:
+  clearml_redis:
+  clearml_elastic:
