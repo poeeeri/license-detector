@@ -90,7 +90,7 @@ poetry run yolo detect val model=weights/best.pt data=data/data.yaml split=test 
 poetry run python scripts/run.py --mode video --input videos/road.mp4 --output result.mp4 --weights weights/best.pt
 ```
 
-![Детекция на видео](demo/demo_video.gif)
+![Детекция на видео](demo/road_video.gif)
 
 Для потокового режима
 
