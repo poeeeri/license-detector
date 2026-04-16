@@ -13,4 +13,5 @@ videos/
 clearml.conf
 runs/
 demo/road_video.mp4
+.env
 ocr_dataset/
