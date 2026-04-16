@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  license-detector:
+    build: .
+    image: license-detector:latest
+    volumes:
+      - ./weights:/app/weights
+      - ./videos:/app/videos
+      - ./data:/app/data
+      - ./output:/app/output
+    #по умолчанию
+    command: --mode video --input videos/road.mp4 --output output/result.mp4 --weights weights/best.pt

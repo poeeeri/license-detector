@@ -1,0 +1,16 @@
+[project]
+name = "ocr-labeler"
+version = "0.1.0"
+description = "generate ocr labels for license-plate crops"
+requires-python = ">=3.10,<3.12"
+dependencies = [
+    "openai>=2.0.0",
+    "Pillow>=10.0.0",
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
