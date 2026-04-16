@@ -69,6 +69,18 @@ poetry run python scripts/train.py --data data/data.yaml --device cpu
 | `--experiment-name` | название эксперимента в ClearML | `yolo-finetune`            |
 
 
+## Запуск evaluation
+Для оценки качества модели на validation/test split используется стандартная валидация Ultralytics YOLO.
+```powershell
+poetry run yolo detect val model=weights/best.pt data=data/data.yaml split=test device=cpu
+```
+
+для гпу 
+```powershell
+poetry run yolo detect val model=weights/best.pt data=data/data.yaml split=test device=cuda
+```
+
+
 ## Запуск детекции
 
 После обучения веса должны сохраниться в папку /weights.
