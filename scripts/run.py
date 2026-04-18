@@ -26,8 +26,11 @@ def annotate_frame(model: My_LicensePlate_Model, frame):
     for plate in model.detect_plates(frame):
         x1, y1, x2, y2 = plate["bbox"]
         cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        cv2.putText(annotated, f"{plate['confidence']:.2f}", (x1, y1-5),
+        # уверенность модели или оср текст
+        label = plate.get("text") or f"{plate['confidence']:.2f}"
+        cv2.putText( annotated, label, (x1, y1-5),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 1)
+
     return annotated
 
 
@@ -112,10 +115,17 @@ def main():
     parser.add_argument('--device', default=default_device, choices=['cuda', 'cpu'], 
                         help='Device: cuda (GPU) or cpu (default: auto)')
     parser.add_argument("--conf", type=float, default=0.25)
+    parser.add_argument("--ocr-backend", default="hf", choices=["hf", "huggingface", "trocr"])
+    parser.add_argument("--ocr-model", default="best_model_export")
+    parser.add_argument("--ocr-device", choices=["cuda", "cpu", "auto"])
+    parser.add_argument("--ocr-max-length", type=int)
+    parser.add_argument("--ocr-num-beams", type=int)
+    parser.add_argument("--ocr-padding", type=float, default=0.05)
+    parser.add_argument("--disable-ocr", action="store_true")
     args = parser.parse_args()
 
     logger.info(
-        "Приложение запущено: mode=%s input=%s output=%s cam_id=%s weights=%s device=%s conf=%s",
+        "Приложение запущено: mode=%s input=%s output=%s cam_id=%s weights=%s device=%s conf=%s, ocr_model=%s",
         args.mode,
         args.input,
         args.output,
@@ -123,9 +133,21 @@ def main():
         args.weights,
         args.device,
         args.conf,
+        None if args.disable_ocr else args.ocr_model
     )
 
-    model = My_LicensePlate_Model(args.weights, device=args.device, conf_threshold=args.conf, logger=logger)
+    model = My_LicensePlate_Model(
+        args.weights,
+        device=args.device,
+        conf_threshold=args.conf,
+        logger=logger,
+        ocr_backend=args.ocr_backend,
+        ocr_model_path=None if args.disable_ocr else args.ocr_model,
+        ocr_device=args.ocr_device,
+        ocr_max_length=args.ocr_max_length,
+        ocr_num_beams=args.ocr_num_beams,
+        crop_padding=args.ocr_padding
+    )
 
     if args.mode == "video":
         if not args.input:
