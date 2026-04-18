@@ -15,3 +15,4 @@ runs/
 demo/road_video.mp4
 .env
 ocr_dataset/
+best_model_export/

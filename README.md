@@ -90,7 +90,7 @@ poetry run yolo detect val model=weights/best.pt data=data/data.yaml split=test 
 poetry run python scripts/run.py --mode video --input videos/road.mp4 --output result.mp4 --weights weights/best.pt
 ```
 
-![Детекция на видео](demo/demo_video.gif)
+![Детекция на видео](demo/road_video.gif)
 
 Для потокового режима
 
@@ -99,6 +99,26 @@ poetry run python scripts/run.py --mode cam --cam_id 0 --weights weights/best.pt
 ```
 
 ![Детекция на камере](demo/demo_cam.gif)
+
+### OCR
+
+По умолчанию `scripts/run.py` подключает OCR-модель из папки `best_model_export` и выводит распознанный номер над найденным ббоксом. Для запуска с другой OCR-моделью укажите путь к папке модели:
+
+```
+poetry run python scripts/run.py --mode video --input videos/road.mp4 --output result.mp4 --weights weights/best.pt --ocr-model path/to/model
+```
+
+Чтобы запустить только детекцию без OCR:
+
+```
+poetry run python scripts/run.py --mode video --input videos/road.mp4 --output result.mp4 --weights weights/best.pt --disable-ocr
+```
+
+Для проверки OCR на уже вырезанном изображении номера:
+
+```
+poetry run python scripts/ocr/check_ocr.py --img path/to/plate.jpg --label A123BC70
+```
   
 ### Параметры запуска
 В целом, у запуска может быть ряд параметров:
@@ -139,5 +159,9 @@ docker-compose run --rm --device /dev/video0 license-detector \
 
 ## Использованные ресурсы
 
+- OpenCV
 - Ultralytics YOLOv8
 - ClearML
+- Hugging Face Transformers
+- TrOCR / VisionEncoderDecoderModel
+- Safetensors

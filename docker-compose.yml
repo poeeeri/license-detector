@@ -9,5 +9,6 @@ services:
       - ./videos:/app/videos
       - ./data:/app/data
       - ./output:/app/output
+      - ./best_model_export:/app/best_model_export
     #по умолчанию
     command: --mode video --input videos/road.mp4 --output output/result.mp4 --weights weights/best.pt
