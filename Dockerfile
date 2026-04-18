@@ -16,7 +16,8 @@ RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi --no-root --only main
 
 COPY scripts/*.py /app/
+COPY scripts/ocr /app/ocr
 
-RUN mkdir -p /app/weights /app/videos /app/data /app/output
+RUN mkdir -p /app/weights /app/videos /app/data /app/output /app/best_model_export
 
 ENTRYPOINT ["python", "run.py"]
