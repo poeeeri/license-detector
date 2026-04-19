@@ -105,8 +105,10 @@ poetry run python scripts/run.py --mode cam --cam_id 0 --weights weights/best.pt
 По умолчанию `scripts/run.py` подключает OCR-модель из папки `best_model_export` и выводит распознанный номер над найденным ббоксом. Для запуска с другой OCR-моделью укажите путь к папке модели:
 
 ```
-poetry run python scripts/run.py --mode video --input videos/road.mp4 --output result.mp4 --weights weights/best.pt --ocr-model path/to/model
+poetry run python scripts/run.py --mode video --input videos/road_to_zonalnaya_stantsiya.mp4 --output result.mp4 --weights weights/best.pt --ocr-model path/to/model
 ```
+#### OCR на видео (кадр оттуда)
+![OCR на видео (кадр оттуда)](demo/image.png)
 
 Чтобы запустить только детекцию без OCR:
 
